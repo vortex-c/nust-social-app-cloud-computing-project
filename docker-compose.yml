@@ -1,0 +1,78 @@
+services:
+
+  frontend:
+    build: ./services/frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - postgres
+      - auth
+      - posts
+      - comments
+
+  auth:
+    build: ./services/auth      
+    container_name: auth
+    ports:
+      - "3000:3000"            
+    environment:
+      - POSTGRES_HOST=postgres      
+      - POSTGRES_USER=postgresuser
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=mydatabase
+      - PORT=3000
+      - JWT_SECRET=9VCMQP7DUVwByKEU7hvRf/DYFWnrH39czxeAunpDVzoFfcLRyHy225K0fW+y6NGK
+    depends_on:
+      - postgres
+
+  posts:
+    build: ./services/posts
+    container_name: posts
+    ports:
+      - "3001:3001"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=postgresuser
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=mydatabase
+      - PORT=3001
+      - AUTH_SERVICE_URL=http://auth:3000
+      - COMMENTS_SERVICE_URL=http://comments:3002
+    depends_on:
+      - postgres
+      - auth
+
+  comments:
+    build: ./services/comments
+    container_name: comments
+    ports:
+      - "3002:3002"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=postgresuser
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=mydatabase
+      - PORT=3002
+      - AUTH_SERVICE_URL=http://auth:3000
+      - POSTS_SERVICE_URL=http://posts:3001
+    depends_on:
+      - postgres
+      - auth
+
+  postgres:
+    build: ./services/postgres        
+    container_name: postgres
+    # healthcheck:
+    #   - test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+    ports:
+      - "5432:5432"             
+    environment:
+      - POSTGRES_USER=postgresuser
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

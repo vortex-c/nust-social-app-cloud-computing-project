@@ -1,0 +1,50 @@
+# The manifest for the "posts" service.
+# Read the full specification for the "Backend Service" type at:
+#  https://aws.github.io/copilot-cli/docs/manifest/backend-service/
+
+# Your service name will be used in naming your resources like log groups, ECS services, etc.
+name: posts
+type: Backend Service
+
+# Your service does not allow any traffic.
+
+# Configuration for your containers and service.
+image:
+  build: services/posts/Dockerfile
+  port: 3001
+
+cpu: 256       # Number of CPU units for the task.
+memory: 512    # Amount of memory in MiB used by the task.
+count: 1       # Number of tasks that should be running in your service.
+exec: true     # Enable running commands in your container.
+
+network:
+  connect: true
+
+variables:
+  LOG_LEVEL: info
+  POSTGRES_USER: myappuser
+  POSTGRES_PASSWORD: myapppassword
+  POSTGRES_DB: myappdb
+  POSTGRES_HOST: postgres
+  JWT_SECRET: 32355c7b25a76f0935590a8367a013d279f7adbec6ebaf3124c3a977c8586f408baba0057a29fe822f54848c114b9794ebfc49f9d4e9166c007a0b3cfc76e7f1
+  AUTH_SERVICE_URL: http://auth:3000
+  COMMENTS_SERVICE_URL: comments:3002
+
+# storage:
+  # readonly_fs: true       # Limit to read-only access to mounted root filesystems.
+
+# Optional fields for more advanced use-cases.
+#
+#variables:                    # Pass environment variables as key value pairs.
+#  LOG_LEVEL: info
+
+#secrets:                      # Pass secrets from AWS Systems Manager (SSM) Parameter Store.
+#  GITHUB_TOKEN: GITHUB_TOKEN  # The key is the name of the environment variable, the value is the name of the SSM parameter.
+
+# You can override any of the values defined above by environment.
+#environments:
+#  test:
+#    count: 2               # Number of tasks to run for the "test" environment.
+#    deployment:            # The deployment strategy for the "test" environment.
+#       rolling: 'recreate' # Stops existing tasks before new ones are started for faster deployments.
